@@ -7,5 +7,6 @@ public class Main {
     public static void main(String[] args) {
         DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
         ClassA a = (ClassA) factory.getBean(ClassA.class);
+        System.out.println(a);
     }
 }

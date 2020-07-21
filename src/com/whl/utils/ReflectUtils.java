@@ -24,7 +24,9 @@ public class ReflectUtils {
 
         for (Map.Entry<Class<?>, String> entry : methodNames.entrySet()) {
             try {
-                methods.put(entry.getKey().getSimpleName(),
+                methods.put(
+                        (char)(entry.getKey().getSimpleName().charAt(0) + 32) +
+                                entry.getKey().getSimpleName().substring(1),
                         clz.getDeclaredMethod(entry.getValue(), entry.getKey()));
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();

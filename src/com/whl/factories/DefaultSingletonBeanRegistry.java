@@ -20,7 +20,9 @@ public class DefaultSingletonBeanRegistry {
     private final Set<String> registeredSingletons = new LinkedHashSet<>(256);
 
     /**
-     * 从缓存池中获取 bean, 若不存在返回null
+     * 从缓存池中获取 bean
+     * 先去 singletonObjects 里尝试获取
+     * 若获取不到, 再去 earlySingletonObjects 里尝试获取
      * @param beanName
      * @return
      */
@@ -35,28 +37,25 @@ public class DefaultSingletonBeanRegistry {
     }
 
     /**
-     * 创建一个完整的 Bean 实例, 并添加到缓存
+     * 通过无参构造器创建一个 bean 实例
      * @param beanName
      * @param clz
      * @return
      */
-    protected Object getSingleton(String beanName, Class<?> clz) {
+    protected Object createSingleton(String beanName, Class<?> clz) {
         synchronized (this.singletonObjects) {
             Object singletonObject = this.singletonObjects.get(beanName);
             if (singletonObject == null) {
                 boolean newSingleton = false;
                 try {
-                    singletonObject = ReflectUtils.getNoArgsConstructor(clz).newInstance();
+                    singletonObject = clz.newInstance();
                     newSingleton = true;
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
+                } catch (InstantiationException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
                 if (newSingleton) {
-                    addSingleton(beanName, singletonObject);
+                    // 放入二级缓存
+                    addEarlySingleton(beanName, singletonObject);
                 }
             }
             return singletonObject;
@@ -68,10 +67,17 @@ public class DefaultSingletonBeanRegistry {
      * @param beanName
      * @param singletonObject
      */
-    protected void addSingleton(String beanName, Object singletonObject) {
+    protected void addEarlySingleton(String beanName, Object singletonObject) {
         synchronized (this.earlySingletonObjects) {
             this.earlySingletonObjects.put(beanName, singletonObject);
             this.registeredSingletons.add(beanName);
+        }
+    }
+
+    protected void addSingletonObject(String beanName, Object singletonObject) {
+        synchronized (this.singletonObjects) {
+            this.earlySingletonObjects.remove(beanName);
+            this.singletonObjects.put(beanName, singletonObject);
         }
     }
 }
