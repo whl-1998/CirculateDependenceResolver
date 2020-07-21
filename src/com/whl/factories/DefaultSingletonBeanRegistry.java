@@ -74,6 +74,11 @@ public class DefaultSingletonBeanRegistry {
         }
     }
 
+    /**
+     * 更新缓存
+     * @param beanName
+     * @param singletonObject
+     */
     protected void addSingletonObject(String beanName, Object singletonObject) {
         synchronized (this.singletonObjects) {
             this.earlySingletonObjects.remove(beanName);
